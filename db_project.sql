@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 10, 2015 at 01:28 AM
+-- Generation Time: Oct 15, 2015 at 09:20 PM
 -- Server version: 5.6.21
 -- PHP Version: 5.6.3
 
@@ -258,17 +258,6 @@ CREATE TABLE IF NOT EXISTS `patron_room` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `phone_number`
---
-
-CREATE TABLE IF NOT EXISTS `phone_number` (
-  `number` varchar(45) NOT NULL,
-  `student_id` varchar(45) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `publication`
 --
 
@@ -317,7 +306,8 @@ CREATE TABLE IF NOT EXISTS `student` (
   `pin` varchar(45) NOT NULL,
   `sex` varchar(45) NOT NULL,
   `sid` varchar(45) NOT NULL,
-  `did` varchar(45) NOT NULL
+  `phone` varchar(45) NOT NULL,
+  `alternate_phone` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -329,6 +319,18 @@ CREATE TABLE IF NOT EXISTS `student` (
 CREATE TABLE IF NOT EXISTS `student_course` (
   `student_id` varchar(45) NOT NULL,
   `cid` varchar(45) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_degree`
+--
+
+CREATE TABLE IF NOT EXISTS `student_degree` (
+  `student_id` varchar(45) NOT NULL,
+  `degree_id` varchar(45) NOT NULL,
+  `classification` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -450,12 +452,6 @@ ALTER TABLE `patron_room`
  ADD PRIMARY KEY (`start`,`end`,`patron_id`,`room_id`), ADD KEY `patron_id` (`patron_id`), ADD KEY `room_id` (`room_id`);
 
 --
--- Indexes for table `phone_number`
---
-ALTER TABLE `phone_number`
- ADD PRIMARY KEY (`number`), ADD KEY `number` (`number`), ADD KEY `patron_id` (`student_id`);
-
---
 -- Indexes for table `publication`
 --
 ALTER TABLE `publication`
@@ -477,13 +473,19 @@ ALTER TABLE `room`
 -- Indexes for table `student`
 --
 ALTER TABLE `student`
- ADD PRIMARY KEY (`sid`), ADD KEY `did_idx` (`did`);
+ ADD PRIMARY KEY (`sid`);
 
 --
 -- Indexes for table `student_course`
 --
 ALTER TABLE `student_course`
  ADD PRIMARY KEY (`student_id`,`cid`), ADD KEY `cid` (`cid`);
+
+--
+-- Indexes for table `student_degree`
+--
+ALTER TABLE `student_degree`
+ ADD PRIMARY KEY (`student_id`), ADD KEY `degree_id` (`degree_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -608,12 +610,6 @@ ADD CONSTRAINT `patron_room_ibfk_1` FOREIGN KEY (`patron_id`) REFERENCES `patron
 ADD CONSTRAINT `patron_room_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `room` (`room_no`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `phone_number`
---
-ALTER TABLE `phone_number`
-ADD CONSTRAINT `student phone` FOREIGN KEY (`student_id`) REFERENCES `student` (`sid`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
 -- Constraints for table `publication_queue`
 --
 ALTER TABLE `publication_queue`
@@ -630,7 +626,6 @@ ADD CONSTRAINT `room_ibfk_1` FOREIGN KEY (`lib_id`) REFERENCES `library` (`lib_i
 -- Constraints for table `student`
 --
 ALTER TABLE `student`
-ADD CONSTRAINT `did` FOREIGN KEY (`did`) REFERENCES `degree` (`Name`) ON DELETE NO ACTION ON UPDATE NO ACTION,
 ADD CONSTRAINT `sid` FOREIGN KEY (`sid`) REFERENCES `patron` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
@@ -639,6 +634,13 @@ ADD CONSTRAINT `sid` FOREIGN KEY (`sid`) REFERENCES `patron` (`id`) ON DELETE CA
 ALTER TABLE `student_course`
 ADD CONSTRAINT `student_course_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`sid`) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT `student_course_ibfk_2` FOREIGN KEY (`cid`) REFERENCES `course` (`cid`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `student_degree`
+--
+ALTER TABLE `student_degree`
+ADD CONSTRAINT `student_degree_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`sid`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `student_degree_ibfk_2` FOREIGN KEY (`degree_id`) REFERENCES `degree` (`Name`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
