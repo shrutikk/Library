@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
+
 /**
  * Servlet implementation class CheckLogin
  */
@@ -40,7 +42,7 @@ public class CheckStudentLogin extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		System.out.println("Here");
+		
 		String username = request.getParameter("unityid_stud");
 		String password = request.getParameter("password_stud");
 		
@@ -70,6 +72,9 @@ public class CheckStudentLogin extends HttpServlet {
             	request.setAttribute("error","Invalid Username or Password");
             	RequestDispatcher rd=request.getRequestDispatcher("/Library.jsp");            
             	rd.include(request, response);
+            }else{
+            	request.setAttribute("studentid",username);
+            	request.getRequestDispatcher("Student.jsp").forward(request, response);
             }
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
