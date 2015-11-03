@@ -24,7 +24,9 @@ $(function() {
     	stepSecond: 10
     });
   });
-
+function logout(){
+	window.location="Library.jsp";
+}
 function redirectPublicationsPage(){
 	window.location="Publications.jsp";
 }
@@ -525,5 +527,6 @@ while(rsCoursesByFaculty.next())
   
 
 </div>
+<button type="submit" class="btn btn-default" onclick="logout()">Logout</button>
 </body>
 </html>

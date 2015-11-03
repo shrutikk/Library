@@ -14,6 +14,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <script>
+function logout(){
+	window.location="Library.jsp";
+}
 function redirectPublicationsPage(){
 	window.location="Publications.jsp";
 }
@@ -172,6 +175,7 @@ Date dob;
 
 
 %>
+
 <div class="row">
 
   <!-- Navigation Buttons -->
@@ -464,5 +468,6 @@ Date dob;
   </div>
 
 </div>
+<button type="submit" class="btn btn-default" onclick="logout()">Logout</button>
 </body>
 </html>
