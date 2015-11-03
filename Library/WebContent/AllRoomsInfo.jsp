@@ -18,9 +18,15 @@ function reserveRoomRedirect(rid){
 }
 </script>
 
-<title>Insert title here</title>
+<title>Available rooms</title>
 </head>
 <body>
+<%HttpSession sess = request.getSession(false); %>
+<ol class="breadcrumb">
+   <li><%if(sess.getAttribute("patrontype").equals("faculty")){%> <a href="Faculty.jsp">Home</a><%}else if(sess.getAttribute("patrontype").equals("student")){%><a href="Student.jsp">Home</a><%} %></li>
+  	<li><a href="Rooms.jsp">All Rooms</a></li>
+  <li class="active">Room Details</li>
+</ol>
 <%
 String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";

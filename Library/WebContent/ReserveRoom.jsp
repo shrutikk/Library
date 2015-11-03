@@ -12,7 +12,7 @@
 <body>
 <%HttpSession sess = request.getSession(false); %>
 <ol class="breadcrumb">
-  <li><%if(sess.getAttribute("patrontype").equals("faculty")){%> <a href="Faculty.jsp"></a><%}else if(sess.getAttribute("patrontype").equals("student")){%><a href="Student.jsp">Home</a><%} %></li>
+  <li><%if(sess.getAttribute("patrontype").equals("faculty")){%> <a href="Faculty.jsp">Home</a><%}else if(sess.getAttribute("patrontype").equals("student")){%><a href="Student.jsp">Home</a><%} %></li>
   <li class="active">Rooms</li>
 </ol>
 <h3>Reserve Room</h3>

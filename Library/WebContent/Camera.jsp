@@ -11,8 +11,9 @@
 <title>Camera</title>
 </head>
 <body>
+<%HttpSession sess = request.getSession(false); %>
 <ol class="breadcrumb">
-  <li><a href="Student.jsp">Home</a></li>
+   <li><%if(sess.getAttribute("patrontype").equals("faculty")){%> <a href="Faculty.jsp">Home</a><%}else if(sess.getAttribute("patrontype").equals("student")){%><a href="Student.jsp">Home</a><%} %></li>
   <li class="active">Camera</li>
 </ol>
 <%
