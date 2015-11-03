@@ -41,7 +41,7 @@ public class EditStudent extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-		String DB_URL = "jdbc:mysql://192.168.0.24:3306/db_project";
+		String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
 
 		   //  Database credentials
 		String USER = "root";
@@ -51,7 +51,8 @@ public class EditStudent extends HttpServlet {
 		
 		String studentId = request.getParameter("studentId");
 		String fname=request.getParameter("studentfname");
-		String lname=request.getParameter("studentlname");
+		String lnames=request.getParameter("studentlname");
+		System.out.println("Last"+lnames);
 		String nationality = request.getParameter("nationality");
 		String sex = request.getParameter("sex");
 		String phno = request.getParameter("phonenumber");
@@ -66,7 +67,7 @@ public class EditStudent extends HttpServlet {
 			stmt = conn.prepareCall("{call editStudent(?,?,?,?,?,?,?,?,?,?,?)}");
             stmt.setString(1, studentId);
             stmt.setString(2, fname);
-            stmt.setString(3, lname);
+            stmt.setString(3, lnames);
             stmt.setString(4, nationality);
             stmt.setString(5, sex);
             stmt.setString(6, phno);
@@ -75,7 +76,7 @@ public class EditStudent extends HttpServlet {
             stmt.setString(9, street);
             stmt.setString(10, city);
             stmt.setString(11, pin);
-            stmt.setInt(3, 0);
+            
             
             System.out.println(stmt); 
             stmt.executeUpdate();

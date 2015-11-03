@@ -5,27 +5,25 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Date;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-
 
 /**
- * Servlet implementation class CheckLogin
+ * Servlet implementation class EditFaculty
  */
-
-public class CheckStudentLogin extends HttpServlet {
+@WebServlet("/EditFaculty")
+public class EditFaculty extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public CheckStudentLogin() {
+    public EditFaculty() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -43,10 +41,6 @@ public class CheckStudentLogin extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
-		String username = request.getParameter("unityid_stud");
-		String password = request.getParameter("password_stud");
-		
 		String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 		String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
 
@@ -55,31 +49,29 @@ public class CheckStudentLogin extends HttpServlet {
 		String PASS = "";
 		Connection conn = null;
 		CallableStatement stmt = null;
+		
+		String facId = request.getParameter("facId");
+		String fname=request.getParameter("facfname");
+		String lname=request.getParameter("faclname");
+		String nationality = request.getParameter("facnation");
+		
 		try {
 			Class.forName(JDBC_DRIVER);
 			conn = DriverManager.getConnection(DB_URL, USER,null);
-			stmt = conn.prepareCall("{call checkLogin(?,MD5(?),?,?)}");
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setInt(3, 0);
-            stmt.registerOutParameter(4, java.sql.Types.BOOLEAN);
-             
+			stmt = conn.prepareCall("{call editFaculty(?,?,?,?)}");
+            stmt.setString(1, facId);
+            stmt.setString(2, fname);
+            stmt.setString(3, lname);
+            stmt.setString(4, nationality);
+            
+            
+            System.out.println(stmt); 
             stmt.executeUpdate();
              
-            //read the OUT parameter now
-            Boolean allow = stmt.getBoolean(4);
+            	System.out.println(facId);
+            	//request.setAttribute("",facId);
+            	request.getRequestDispatcher("Faculty.jsp").forward(request, response);
             
-            if(!allow){
-            	request.setAttribute("error","Invalid Username or Password");
-            	RequestDispatcher rd=request.getRequestDispatcher("/Library.jsp");            
-            	rd.include(request, response);
-            }else{
-            	HttpSession sess = request.getSession(); 
-            	sess.setAttribute("patronid", username);
-            	sess.setAttribute("patrontype", "student");
-            	//request.setAttribute("studentid",username);
-            	request.getRequestDispatcher("Student.jsp").forward(request, response);
-            }
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,9 +79,6 @@ public class CheckStudentLogin extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	      
-	      
 
 	}
 

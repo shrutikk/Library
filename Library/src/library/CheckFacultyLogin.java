@@ -8,10 +8,10 @@ import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class CheckFacultyLogin
@@ -44,8 +44,11 @@ public class CheckFacultyLogin extends HttpServlet {
 		String username = request.getParameter("unityid_fac");
 		String password = request.getParameter("password_fac");
 		
+		HttpSession sess = request.getSession();
+		sess.setAttribute("patronid",username);
+		sess.setAttribute("patrontype", "faculty");
 		String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-		String DB_URL = "jdbc:mysql://192.168.0.24:3306/db_project";
+		String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
 
 		   //  Database credentials
 		String USER = "root";
@@ -54,29 +57,33 @@ public class CheckFacultyLogin extends HttpServlet {
 		CallableStatement stmt = null;
 		try {
 			Class.forName(JDBC_DRIVER);
-			conn = DriverManager.getConnection(DB_URL, USER,null);
-			stmt = conn.prepareCall("{call checkLogin(?,MD5(?),?,?)}");
+			conn = (Connection) DriverManager.getConnection(DB_URL, USER,null);
+			stmt = (CallableStatement) conn.prepareCall("{call checkLogin(?,MD5(?),?,?)}");
             stmt.setString(1, username);
             stmt.setString(2, password);
             stmt.setInt(3, 1);
-            stmt.registerOutParameter(4, java.sql.Types.BOOLEAN);
-             
+            stmt.registerOutParameter(4, java.sql.Types.BOOLEAN); 
             stmt.executeUpdate();
              
             //read the OUT parameter now
             Boolean allow = stmt.getBoolean(4);
+            
             if(!allow){
             	request.setAttribute("error","Invalid Username or Password");
             	RequestDispatcher rd=request.getRequestDispatcher("/Library.jsp");            
             	rd.include(request, response);
             }
+            else{
+            	request.setAttribute("Facultyid",username);
+                request.getRequestDispatcher("Faculty.jsp").forward(request, response);
+            	//response.sendRedirect("Faculty.jsp");
+            }
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 
 	}
 
