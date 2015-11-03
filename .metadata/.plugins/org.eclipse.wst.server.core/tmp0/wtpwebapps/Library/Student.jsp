@@ -13,27 +13,70 @@
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script>
+function logout(){
+	window.location="Library.jsp";
+}
+function redirectPublicationsPage(){
+	window.location="Publications.jsp";
+}
+function redirectCameraPage(){
+	window.location="Camera.jsp";
+}
+function redirectRoomsPage(){
+	window.location="Rooms.jsp";
+}
+function checkOutRoomRedirect(reservationId){
+	window.location="/Library/CheckoutRoom?resId="+reservationId;
+}
+function checkOutCameraRedirect(reservationId){
+	window.location="/Library/CheckoutCamera?resId="+reservationId;
+}
+function checkInRoomRedirect(reservationId){
+	window.location="/Library/CheckInRoom?resId="+reservationId;
+}
+function checkInCameraRedirect(reservationId){
+	window.location="/Library/CheckInCamera?resId="+reservationId;
+}
+function checkInDocumentRedirect(reservationId){
+	window.location="/Library/CheckInDocument?resId="+reservationId;
+}
+function payBalance(amount){	
+	window.location="/Library/MakePayment?amount="+amount;
+}
+</script>
 <title>Student</title>
 </head>
 <body>
 <%
-
+boolean ischeckedout =false,ischeckedin=false;
+if(request.getAttribute("checkoutstatus")!=null){
+	ischeckedout=true;
+	
+}
+if(request.getAttribute("checkinstatus")!=null){
+	ischeckedin=true;
+	
+}
 String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-String DB_URL = "jdbc:mysql://192.168.0.24:3306/db_project";
+String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
 
 String USER = "root";
 String PASS = "";
 Connection conn = null;
 String studentId,studentfName,studentlname,nationality,department,sex,address,category,degree,phno,alt_phno,street,city,pin;
-float balance;
+float balance=0;
 Date dob;
 
 
 	Class.forName(JDBC_DRIVER);
 	conn = DriverManager.getConnection(DB_URL, USER,null);
-	System.out.println((String)request.getAttribute("studentid"));
+	HttpSession sess = request.getSession(false); //use false to use the existing session
+	String patronId=(String)sess.getAttribute("patronid");
+	
+	System.out.println(patronId);
 	PreparedStatement pstmt = conn.prepareStatement("{call getStudentProfile(?)}");
-    pstmt.setString(1, (String)request.getAttribute("studentid"));
+    pstmt.setString(1, patronId);
     ResultSet rs = pstmt.executeQuery();                
     rs.next();
    	studentId = rs.getString(1);
@@ -50,26 +93,98 @@ Date dob;
    	pin=rs.getString(12);
    	category=rs.getString(15);
    	degree=rs.getString(16);
+   	balance = rs.getFloat(13);
     rs.close();
     pstmt.close();
      
     DateFormat df = new SimpleDateFormat("MM/dd/yyyy");        
 	String dateofbirth = df.format(dob);
 
-  
+	pstmt = conn.prepareStatement("{call getAllNotifications(?)}");
+    pstmt.setString(1, patronId);
+    ResultSet not = pstmt.executeQuery();    
     
-    
+    ResultSet rsCheckedOutRooms=null;
+	try {
+	PreparedStatement pstmtCheckedOutRooms = conn.prepareStatement("{call getAllCheckedoutRooms(?)}");
+    pstmtCheckedOutRooms.setString(1,patronId);
+    rsCheckedOutRooms = pstmtCheckedOutRooms.executeQuery();        
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}    
+	
+	//Get list of checkedout Cameras
+	ResultSet rsCheckedOutCameras=null;
+	try {
+	PreparedStatement pstmtCheckedOutCameras = conn.prepareStatement("{call getAllCheckedoutCamera(?)}");
+	pstmtCheckedOutCameras.setString(1,patronId);
+    rsCheckedOutCameras = pstmtCheckedOutCameras.executeQuery();        
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}
+       
+	//Get list of checkedout publications
+	ResultSet rsCheckedOutPublications=null;
+	try {
+	PreparedStatement pstmtCheckedOutPublications = conn.prepareStatement("{call getAllCheckedoutPublications(?)}");
+    pstmtCheckedOutPublications.setString(1,patronId);
+    rsCheckedOutPublications = pstmtCheckedOutPublications.executeQuery();        
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}  
+	
+	//Get All Requested Rooms
+    ResultSet rsReservedRooms=null;
+	try {
+	PreparedStatement pstmtReservedRooms = conn.prepareStatement("{call getAllRequestedRooms(?)}");
+    pstmtReservedRooms.setString(1,patronId);
+    rsReservedRooms = pstmtReservedRooms.executeQuery();        
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}
+	
+    //Get All Requested Cameras
+    ResultSet rsReservedCameras=null;
+	try {
+	PreparedStatement pstmtReservedCameras = conn.prepareStatement("{call getAllReservedCamera(?)}");
+    pstmtReservedCameras.setString(1,patronId);
+    rsReservedCameras = pstmtReservedCameras.executeQuery();        
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}
+	
+	ResultSet isPatrononHold=null;
+	boolean isOnHold=false;
+	try {
+		CallableStatement onhold = conn.prepareCall("{call isPatronOnHold(?,?)}");
+		onhold.setString(1,patronId);
+		onhold.registerOutParameter(2, java.sql.Types.BOOLEAN);
+		onhold.executeUpdate();
+		isOnHold=onhold.getBoolean(2);
+		
+	} catch (SQLException e) 
+    {
+		e.printStackTrace();
+	}
+	
+
 
 %>
+
 <div class="row">
 
   <!-- Navigation Buttons -->
   <div class="col-md-2">
     <ul class="nav nav-pills nav-stacked" id="myTabs">
-      <li class="active"><a data-toggle="tab" href="#studentprofile">Profile</a></li>
+       <li <%if((!ischeckedout) && (!ischeckedin)){ %>class="active" <%} %>><a data-toggle="tab" href="#studentprofile">Profile</a></li>
       <li><a data-toggle="tab" href="#studentresources">Resources</a></li>
-      <li><a data-toggle="tab" href="#studentchkout">Checked Out Resources</a></li>
-      <li><a data-toggle="tab" href="#studentrequests">Resource Requests</a></li>
+      <li <%if(ischeckedin){ %> class="active" <%} %>><a data-toggle="tab" href="#studentchkout">Checked Out Resources</a></li>
+      <li <%if(ischeckedout){ %> class="active" <%} %>><a data-toggle="tab" href="#studentrequests">Resource Requests</a></li>
       <li><a data-toggle="tab" href="#notifications">Notifications</a></li>
       <li><a data-toggle="tab" href="#balance">Due Balance</a></li>
     </ul>
@@ -78,7 +193,7 @@ Date dob;
   <!-- Content -->
   <div class="col-md-9">
     <div class="tab-content">
-      <div class="tab-pane active" id="studentprofile">
+      <div class="tab-pane <%if((!ischeckedout) && (!ischeckedin)){ %>active <%} %>"  id="studentprofile">
       	<form class="form-horizontal" action="EditStudent" method="POST">
   		<div class="form-group">
 		    <label  class="col-sm-2 control-label">Student ID</label>
@@ -171,14 +286,188 @@ Date dob;
 		 </div>
 	   </form>
       </div>
-      <div class="tab-pane" id="studentresources">Res</div>
-      <div class="tab-pane" id="studentchkout">Chkout</div>
-      <div class="tab-pane" id="studentrequests">requests</div>
-      <div class="tab-pane" id="notifications">not</div>
-      <div class="tab-pane" id="balance">bal</div>
+      
+      <div class="tab-pane" id="studentresources">
+      <%
+      	if(!isOnHold){
+      %>
+      	<button type="submit" class="btn btn-default" onclick="redirectPublicationsPage()">Publications</button>
+      <button type="submit" class="btn btn-default" onclick="redirectCameraPage()">Camera</button>
+      <button type="submit" class="btn btn-default" onclick="redirectRoomsPage()">Rooms</button>
+      	<%}else{ %>
+      	<div class="alert alert-danger fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Error!</strong> You are on Hold.
+	  	</div>
+  	<%} %>
+      </div>
+      <div class="tab-pane <%if(ischeckedin){ %>active <%} %>"  id="studentchkout">
+      	<% 	
+    		if(ischeckedin && request.getAttribute("checkinstatus").equals("success")){
+		%>
+		<div class="alert alert-success fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Success!</strong> Checkin successful.
+	  </div>
+	  
+		<% }%>	
+		<h3>Checked Out Rooms</h3>
+      	<table class="table table-striped" id="checkedRoomsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Room Number</th>
+<th></th>
+</tr>
+<%	
+	while(rsCheckedOutRooms.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutRooms.getString(2)%></td>
+<td><%=rsCheckedOutRooms.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutRooms.getString(2)%>" onclick="checkInRoomRedirect(<%=rsCheckedOutRooms.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      
+<h3>Checked out Cameras</h3>     
+<table class="table table-striped" id="checkedCamerasTable">
+<tr>
+<th>Reservation Id</th>
+<th>Camera Id</th>
+<th></th>
+</tr>
+<%	
+	while(rsCheckedOutCameras.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutCameras.getString(2)%></td>
+<td><%=rsCheckedOutCameras.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutCameras.getString(2)%>" onclick="checkInCameraRedirect(<%=rsCheckedOutCameras.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      
+<h3>Checked Out Publications</h3>     
+<table class="table table-striped" id="checkedPublicationsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Publication Id</th>
+<th></th>
+</tr>
+<%	
+	while(rsCheckedOutPublications.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutPublications.getString(2)%></td>
+<td><%=rsCheckedOutPublications.getString(3)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutPublications.getString(2)%>" onclick="checkInDocumentRedirect(<%=rsCheckedOutPublications.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>   
+      	
+      </div>
+      <div class="tab-pane <%if(ischeckedout){ %>active <%} %>"" id="studentrequests">
+      <% 	
+    		if(ischeckedout && request.getAttribute("checkoutstatus").equals("success")){
+		%>
+		<div class="alert alert-success fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Success!</strong> Checkout successful.
+	  </div>
+	  
+		<% }%>	
+		<h3>Reserved Rooms</h3>
+      	<table class="table table-striped" id="roomsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Room Number</th>
+</tr>
+<%	
+	while(rsReservedRooms.next())
+	{
+%>
+<tr>
+<td><%=rsReservedRooms.getString(2)%></td>
+<td><%=rsReservedRooms.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsReservedRooms.getString(2)%>" onclick="checkOutRoomRedirect(<%=rsReservedRooms.getString(2)%>)">Checkout</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+         
+<h3>Reserved Camera</h3>     
+<table class="table table-striped" id="camerasTable">
+<tr>
+<th>Reservation Id</th>
+<th>Camera Id</th>
+<th></th>
+</tr>
+<%	
+	while(rsReservedCameras.next())
+	{
+%>
+<tr>
+<td><%=rsReservedCameras.getString(2)%></td>
+<td><%=rsReservedCameras.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsReservedCameras.getString(2)%>" onclick="checkOutCameraRedirect(<%=rsReservedCameras.getString(2)%>)">Checkout</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      </div>
+      <div class="tab-pane" id="notifications">
+      	<%
+      	if (!not.next()) {
+      	  %>
+      	  <p> No Notifications </p>
+      	  <%
+      	} else {
+      	  //display results%>
+      	  <table class="table table-striped" id="notificationTable">
+      	  <tr>
+      	  <th>Notification Time </th>
+      	  <th>Notification </th>
+      	  </tr>
+      <%	  do {
+      	    %>
+      	    <tr>
+      	    <td><%=not.getString(5) %></td>
+      	    <td><%=not.getString(4) %></td>
+      	    </tr>
+      	    <% 
+      	  } while (not.next());
+      	}
+      	%>
+      	</table>
+      </div>
+      <div class="tab-pane" id="balance">
+			<div class="form-group">
+			    <label for="inputEmail3" class="col-sm-2 control-label">Balance</label>
+			    <div class="col-sm-10">
+			     <input type="text" class="form-control" id="inputbalance" placeholder="Balance" value="<%=balance %>" readonly="true">
+			    </div>
+			 </div>
+			 <div class="form-group">
+		    <div class="col-sm-10">
+		      <button type="submit" class="btn btn-default" onclick="payBalance(<%=String.valueOf(balance)%>)">Pay Balance</button>
+		    </div>
+	  	</div> 
+	   </div>
     </div>
   </div>
 
 </div>
+<button type="submit" class="btn btn-default" onclick="logout()">Logout</button>
 </body>
 </html>

@@ -1,0 +1,59 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.util.Calendar" %>
+<%@ page import="java.text.*" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script>
+function getRoomInfo(){
+	window.location="AllRoomsInfo.jsp";
+}
+</script>
+<title>Rooms</title>
+</head>
+<body>
+<%
+HttpSession sess=request.getSession(false);
+String patronId = (String)sess.getAttribute("patronid");
+%>
+
+<ol class="breadcrumb">
+  <li><%if(sess.getAttribute("patrontype").equals("faculty")){%> <a href="Faculty.jsp">Home</a><%}else if(sess.getAttribute("patrontype").equals("student")){%><a href="Student.jsp">Home</a><%} %></li>
+  <li><a href="Publications.jsp">Rooms</a></li>
+  <li class="active">Book</li>
+</ol>
+
+<form action="FetchRoomInfo" method="POST">
+ <div class="form-group">
+  <label for="occupants">Number of Occupants</label>
+  <input type="text" class="form-control" id="occucount" name="occucount">
+ </div>
+ <div class="form-group">
+  <label for="libraryid">Library Id</label>
+  <input type="text" class="form-control" id="libid" name="libid">
+ </div>
+ <div class="form-group">
+  <label for="roomtype">Type of Room</label>
+  <div>
+<select name="roomdropdown" id="roomdropdown">
+<option value="Study Room">Study</option>
+<%if(sess.getAttribute("patrontype").equals("faculty")){ %>
+<option value="Conference Room">Conference</option>
+<%} %>
+</select>
+</div>
+ </div>
+ <div class="form-group">
+  <button type="submit" class="btn btn-default" onclick="getRoomInfo()">Get All Rooms</button>  
+ </div>
+</form>  
+</body>
+</html>

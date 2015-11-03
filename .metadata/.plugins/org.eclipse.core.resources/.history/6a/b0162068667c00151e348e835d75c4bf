@@ -1,0 +1,43 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<title>Publications</title>
+</head>
+<body>
+<%
+String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
+
+String USER = "root";
+String PASS = "";
+Connection conn = null;
+%>
+<ul class="nav nav-tabs">
+  <li  class="active"><a data-toggle="tab" href="#bookstab">Books</a></li>
+  <li><a data-toggle="tab" href="#journalstab">Journals</a></li>
+  <li ><a data-toggle="tab" href="#confproctab">Conference Proceedings</a></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane active" id="bookstab">
+<table class="table table-striped">
+<tr>
+<th>ISBN Number</th>
+<th>Title</th>
+</tr>
+</table>
+</div>
+<div class="tab-pane" id="journalstab">
+journals
+</div>
+<div class="tab-pane" id="confproctab">
+Conf
+</div>
+</div>
+</body>
+</html>

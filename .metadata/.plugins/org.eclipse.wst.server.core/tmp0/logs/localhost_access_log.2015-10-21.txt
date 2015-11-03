@@ -1,0 +1,12 @@
+127.0.0.1 - - [21/Oct/2015:18:19:05 -0400] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:19:28 -0400] "GET /Library/Library.jsp HTTP/1.1" 200 2005
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:19:30 -0400] "GET /favicon.ico HTTP/1.1" 404 1016
+127.0.0.1 - - [21/Oct/2015:18:20:29 -0400] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:20:46 -0400] "GET /Library/CheckStudentLogin HTTP/1.1" 200 19
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:20:53 -0400] "GET /Library/Library.jsp HTTP/1.1" 200 2005
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:21:27 -0400] "POST /Library/CheckStudentLogin HTTP/1.1" 500 10652
+127.0.0.1 - - [21/Oct/2015:18:40:52 -0400] "GET / HTTP/1.1" 404 994
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:43:41 -0400] "GET /Library/Library.jsp HTTP/1.1" 200 2005
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:18:45:30 -0400] "POST /Library/CheckStudentLogin HTTP/1.1" 200 5644
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:19:14:43 -0400] "GET /Library/Library.jsp HTTP/1.1" 200 2005
+0:0:0:0:0:0:0:1 - - [21/Oct/2015:19:15:42 -0400] "POST /Library/CheckFacultyLogin HTTP/1.1" 200 -

@@ -1,0 +1,32 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+    <%@ page import="java.sql.*" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<%
+String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
+String lens_conf,memory,make,model;
+int resource_id;
+String USER = "root";
+String PASS = "";
+Connection conn = null;
+Class.forName(JDBC_DRIVER);
+conn = DriverManager.getConnection(DB_URL, USER,null);
+PreparedStatement pstmt = conn.prepareStatement("{call getCameraById(?)}");
+pstmt.setString(1, (String)request.getAttribute("camera"));
+ResultSet rs = pstmt.executeQuery();                
+rs.next();
+lens_conf=rs.getString(2);
+memory=rs.getString(3);
+make=rs.getString(4);
+model=rs.getString(5);
+resource_id=rs.getInt(6);
+%>
+</body>
+</html>

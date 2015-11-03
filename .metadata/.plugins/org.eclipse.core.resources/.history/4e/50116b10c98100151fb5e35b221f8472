@@ -1,0 +1,497 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.util.Calendar" %>
+<%@ page import="java.text.*" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script>
+function redirectPublicationsPage(){
+	window.location="Publications.jsp";
+}
+function redirectCameraPage(){
+	window.location="Camera.jsp";
+}
+function validateValues() {
+    //if(document.getElementById("inputfname").value=="" || document.getElementById("inputlname").value=="" || document.getElementById("inputnationality").value=="")
+    	//{
+    	//alert("invalid input");
+    	//location.reload();
+    //	}
+}
+function redirectRoomsPage(){
+	window.location="Rooms.jsp";
+}
+function checkOutRoomRedirect(reservationId){
+	window.location="/Library/CheckoutRoom?resId="+reservationId;
+}
+function checkOutCameraRedirect(reservationId){
+	window.location="/Library/CheckoutCamera?resId="+reservationId;
+}
+function checkInRoomRedirect(reservationId){
+	window.location="/Library/CheckInRoom?resId="+reservationId;
+}
+function checkInCameraRedirect(reservationId){
+	window.location="/Library/CheckInCamera?resId="+reservationId;
+}
+function checkInDocumentRedirect(reservationId){
+	window.location="/Library/CheckInDocument?resId="+reservationId;
+}
+function payBalance(amount){
+	
+	window.location="/Library/MakePayment?amount="+amount;
+}
+function redirectFacultyBookReserve(facultyid){
+	var bdropdown = document.getElementById("bookdropdown");
+	var cdropdown = document.getElementById("coursedropdown");
+	console.log(bdropdown.value);
+	console.log(cdropdown.value);
+	console.log('NOw redirecring!!');
+	window.location="FacultyBookReserve.jsp?book="+bdropdown.value+"&course="+cdropdown.value+"&facultyid="+facultyid;
+}
+</script>
+<title>Faculty</title>
+</head>
+<body>
+<%
+boolean ischeckedout =false,ischeckedin=false;
+if(request.getAttribute("checkoutstatus")!=null){
+	ischeckedout=true;
+	
+}
+if(request.getAttribute("checkinstatus")!=null){
+	ischeckedin=true;
+	
+}
+String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
+String DB_URL = "jdbc:mysql://54.218.118.111:3306/db_project";
+
+String USER = "root";
+String PASS = "";
+Connection conn = null;
+String FacultyId,facultyFisrtName,facultyLastName,category,nationality,dName;
+float balance;
+Date dob;
+	HttpSession sess = request.getSession(false);
+	Class.forName(JDBC_DRIVER);
+	conn = DriverManager.getConnection(DB_URL, USER,null);
+	System.out.println((String)request.getAttribute("Facultyid"));
+	PreparedStatement pstmt = conn.prepareStatement("{call getFacultyProfile(?)}");
+    pstmt.setString(1, (String)sess.getAttribute("patronid"));
+    ResultSet rs = pstmt.executeQuery();                
+    rs.next();
+    FacultyId = rs.getString(1);
+    facultyFisrtName = rs.getString(2);
+    facultyLastName=rs.getString(3);
+    category = rs.getString(4);
+    nationality = rs.getString(5);
+    dName=rs.getString(6);
+   	balance=rs.getFloat(7);
+    rs.close();
+    pstmt.close();
+    
+    pstmt = conn.prepareStatement("{call getAllNotifications(?)}");
+    pstmt.setString(1, FacultyId);
+    ResultSet not = pstmt.executeQuery(); 
+        //Get All Requested Rooms
+        ResultSet rsReservedRooms=null;
+		try {
+		PreparedStatement pstmtReservedRooms = conn.prepareStatement("{call getAllRequestedRooms(?)}");
+        pstmtReservedRooms.setString(1,FacultyId);
+        rsReservedRooms = pstmtReservedRooms.executeQuery();        
+		} catch (SQLException e) 
+        {
+			e.printStackTrace();
+		}
+		
+	    //Get All Requested Cameras
+        ResultSet rsReservedCameras=null;
+		try {
+		PreparedStatement pstmtReservedCameras = conn.prepareStatement("{call getAllReservedCamera(?)}");
+        pstmtReservedCameras.setString(1,FacultyId);
+        rsReservedCameras = pstmtReservedCameras.executeQuery();        
+		} catch (SQLException e) 
+        {
+			e.printStackTrace();
+		}
+		
+        //Get list of checkedout out rooms
+        ResultSet rsCheckedOutRooms=null;
+		try {
+		PreparedStatement pstmtCheckedOutRooms = conn.prepareStatement("{call getAllCheckedoutRooms(?)}");
+        pstmtCheckedOutRooms.setString(1,FacultyId);
+        rsCheckedOutRooms = pstmtCheckedOutRooms.executeQuery();        
+		} catch (SQLException e) 
+        {
+			e.printStackTrace();
+		}    
+		
+		//Get list of checkedout Cameras
+		ResultSet rsCheckedOutCameras=null;
+		try {
+		PreparedStatement pstmtCheckedOutCameras = conn.prepareStatement("{call getAllCheckedoutCamera(?)}");
+		pstmtCheckedOutCameras.setString(1,FacultyId);
+        rsCheckedOutCameras = pstmtCheckedOutCameras.executeQuery();        
+		} catch (SQLException e) 
+        {
+			e.printStackTrace();
+		}
+           
+		//Get list of checkedout publications
+		ResultSet rsCheckedOutPublications=null;
+		try {
+		PreparedStatement pstmtCheckedOutPublications = conn.prepareStatement("{call getAllCheckedoutPublications(?)}");
+        pstmtCheckedOutPublications.setString(1,FacultyId);
+        rsCheckedOutPublications = pstmtCheckedOutPublications.executeQuery();        
+		} catch (SQLException e) 
+        {
+			e.printStackTrace();
+		}
+		
+		ResultSet isPatrononHold=null;
+		boolean isOnHold=false;
+		try {
+			CallableStatement onhold = conn.prepareCall("{call isPatronOnHold(?,?)}");
+			onhold.setString(1,FacultyId);
+			onhold.registerOutParameter(2, java.sql.Types.BOOLEAN);
+			onhold.executeUpdate();
+			isOnHold=onhold.getBoolean(2);
+			
+		} catch (SQLException e) 
+	    {
+			e.printStackTrace();
+		}
+		
+		//Get All Courses taught by a particular faculty
+				ResultSet rsCoursesByFaculty=null;
+				try {
+				PreparedStatement pstmtFacultyCourses = conn.prepareStatement("{call getCoursesByFaculty(?)}");
+				pstmtFacultyCourses.setString(1,FacultyId);
+				rsCoursesByFaculty = pstmtFacultyCourses.executeQuery();
+				} catch (SQLException e) 
+				{
+					e.printStackTrace();
+				}
+
+				//Get list of all books
+				ResultSet rsBookList=null;
+				try {
+				PreparedStatement pstmtBooks = conn.prepareStatement("{call getAllBooks()}");
+				rsBookList = pstmtBooks.executeQuery();        
+				} catch (SQLException e) 
+				{
+					e.printStackTrace();
+				}
+%> 
+
+<div class="row">
+
+  <!-- Navigation Buttons -->
+  <div class="col-md-2">
+    <ul class="nav nav-pills nav-stacked" id="myTabs">
+      <li <%if((!ischeckedout) && (!ischeckedin)){ %>class="active" <%} %>><a data-toggle="tab" href="#studentprofile">Profile</a></li>
+      <li><a data-toggle="tab" href="#studentresources">Resources</a></li>
+      <li <%if(ischeckedin){ %> class="active" <%} %>><a data-toggle="tab" href="#studentchkout">Checked Out Resources</a></li>
+      <li <%if(ischeckedout){ %> class="active" <%} %>><a data-toggle="tab" href="#studentrequests">Resource Requests</a></li>
+      <li><a data-toggle="tab" href="#notifications">Notifications</a></li>
+      <li><a data-toggle="tab" href="#coursebookreserve">Reserve Book for Course</a></li>
+      <li><a data-toggle="tab" href="#balance">Due Balance</a></li>
+    </ul>
+  </div>
+
+  <!-- Content -->
+  <div class="col-md-9">
+    <div class="tab-content">
+      <div class="tab-pane <%if((!ischeckedout) && (!ischeckedin)){ %>active <%} %>" id="studentprofile">
+      <form class="form-horizontal" action="EditFaculty" method="POST">
+      	<div class="form-group">
+		    <label  class="col-sm-2 control-label">Student ID</label>
+		    <div class="col-sm-5">
+		      <input type="text" class="form-control" id="facId" name="facId" value="<%= FacultyId%>" readonly>
+	    	</div>
+  		</div>
+      <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">First Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputfname" placeholder="First Name" name="facfname" value="<%=facultyFisrtName %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Last Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputlname" placeholder="Last Name" name="faclname" value="<%=facultyLastName %>" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Category</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputcategory" placeholder="Category" value="<%=category %>" readonly="true">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Nationality</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputnationality" placeholder="Nationality" name="facnation" value="<%=nationality %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Faculty Id</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputfid" placeholder="Faculty Id" value="<%=FacultyId %>" readonly="true">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Department Name</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputdname" placeholder="Department Name" value="<%=dName %>" readonly="true">
+    </div>
+  </div>
+  
+  
+  
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-default" onclick="validateValues()">Save</button>
+    </div>
+  </div>
+  
+  
+
+</form>
+
+     </div>
+      
+      <div class="tab-pane" id="studentresources">
+      <%
+      	if(!isOnHold){
+      %>
+      	<button type="submit" class="btn btn-default" onclick="redirectPublicationsPage()">Publications</button>
+      <button type="submit" class="btn btn-default" onclick="redirectCameraPage()">Camera</button>
+      <button type="submit" class="btn btn-default" onclick="redirectRoomsPage()">Rooms</button>
+      	<%}else{ %>
+      	<div class="alert alert-danger fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Error!</strong> You are on Hold.
+	  	</div>
+  	<%} %>
+  	</div>
+      <div class="tab-pane <%if(ischeckedin){ %>active <%} %>" id="studentchkout">
+      <% 	
+    		if(ischeckedin && request.getAttribute("checkinstatus").equals("success")){
+		%>
+		<div class="alert alert-success fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Success!</strong> Checkin successful.
+	  </div>
+	  
+		<% }%>	
+		<h3>Checked Out Rooms</h3>
+<table class="table table-striped" id="checkedRoomsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Room Number</th>
+</tr>
+<%	
+	while(rsCheckedOutRooms.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutRooms.getString(2)%></td>
+<td><%=rsCheckedOutRooms.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutRooms.getString(2)%>" onclick="checkInRoomRedirect(<%=rsCheckedOutRooms.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      
+<h3>Checked out Cameras</h3>          
+<table class="table table-striped" id="checkedCamerasTable">
+<tr>
+<th>Reservation Id</th>
+<th>Camera Id</th>
+</tr>
+<%	
+	while(rsCheckedOutCameras.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutCameras.getString(2)%></td>
+<td><%=rsCheckedOutCameras.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutCameras.getString(2)%>" onclick="checkInCameraRedirect(<%=rsCheckedOutCameras.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      
+<h3>Checked Out Publications</h3>     
+<table class="table table-striped" id="checkedPublicationsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Publication Id</th>
+</tr>
+<%	
+	while(rsCheckedOutPublications.next())
+	{
+%>
+<tr>
+<td><%=rsCheckedOutPublications.getString(2)%></td>
+<td><%=rsCheckedOutPublications.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsCheckedOutPublications.getString(2)%>" onclick="checkInDocumentRedirect(<%=rsCheckedOutPublications.getString(2)%>)">CheckIn</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>   
+      </div>
+      <div class="tab-pane <%if(ischeckedout){ %>active <%} %>" id="studentrequests">
+    	<% 	
+    		if(ischeckedout && request.getAttribute("checkoutstatus").equals("success")){
+		%>
+		<div class="alert alert-success fade in">
+	    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+	    <strong>Success!</strong> Checkout successful.
+	  </div>
+	  
+		<% }%>	 
+		<h3>Reserved Rooms</h3>
+<table class="table table-striped" id="roomsTable">
+<tr>
+<th>Reservation Id</th>
+<th>Room Number</th>
+<th></th>
+</tr>
+<%	
+	while(rsReservedRooms.next())
+	{
+%>
+<tr>
+<td><%=rsReservedRooms.getString(2)%></td>
+<td><%=rsReservedRooms.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsReservedRooms.getString(2)%>" onclick="checkOutRoomRedirect(<%=rsReservedRooms.getString(2)%>)">Checkout</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+         
+     <h3>Reserved Camera</h3>
+<table class="table table-striped" id="camerasTable">
+<tr>
+<th>Reservation Id</th>
+<th>Camera Id</th>
+</tr>
+<%	
+	while(rsReservedCameras.next())
+	{
+%>
+<tr>
+<td><%=rsReservedCameras.getString(2)%></td>
+<td><%=rsReservedCameras.getString(1)%></td>
+<td><button type="submit" class="btn btn-default" value="<%=rsReservedCameras.getString(2)%>" onclick="checkOutCameraRedirect(<%=rsReservedCameras.getString(2)%>)">Checkout</button></td>
+</tr>
+<%	   
+	}	
+%>
+</table>
+      </div>
+      <div class="tab-pane" id="notifications">
+      	<%
+      	if (!not.next()) {
+      	  %>
+      	  <p> No Notifications </p>
+      	  <%
+      	} else {
+      	  //display results%>
+      	  <table class="table table-striped" id="notificationTable">
+      	  <tr>
+      	  <th>Notification Time </th>
+      	  <th>Notification </th>
+      	  </tr>
+      <%	  do {
+      	    %>
+      	    <tr>
+      	    <td><%=not.getString(5) %></td>
+      	    <td><%=not.getString(4) %></td>
+      	    </tr>
+      	    <% 
+      	  } while (not.next());
+      	}
+      	%>
+      	</table>
+      </div>
+      <div class="tab-pane" id="coursebookreserve">
+      
+		  <div class="form-group">
+		  <label for="">Select Book</label>
+		  <div>
+				<select name="booksdropdown" id="bookdropdown">
+				<%
+				while(rsBookList.next())
+				{
+				%>
+				<option value="<%=rsBookList.getString(1)%>"><%=rsBookList.getString(2)%></option>
+				<%
+				}
+				%>
+				</select>
+			</div>
+ 			</div>
+ 
+ <div class="form-group">
+  <label for="">Select Course</label>
+  <div>
+<select name="coursedropdown" id="coursedropdown">
+<%
+while(rsCoursesByFaculty.next())
+{
+%>
+<option value="<%=rsCoursesByFaculty.getString(1)%>"><%=rsCoursesByFaculty.getString(1)%></option>
+<%
+}
+%>
+</select>
+</div>
+ </div>
+  <div class="form-group">
+  <label for="stime">Start Time</label>
+  <input type="text" class="date" id="stime" name="stime">
+  </div>
+  
+<div class="form-group">
+  <label for="etime">End Time</label>
+  <input type="text" class="date" id="etime" name="etime">
+ </div>
+ 
+ 
+ <div class="form-group">
+  <button type="submit" class="btn btn-default" onclick="redirectFacultyBookReserve('<%=FacultyId%>')">Reserve Book</button>  
+ </div>
+ </div> 
+      <div class="tab-pane" id="balance">
+      	<div class="form-group">
+		    <label for="inputEmail3" class="col-sm-2 control-label">Balance</label>
+		    <div class="col-sm-10">
+		     <input type="text" class="form-control" id="inputbalance" placeholder="Balance" value="<%=balance %>" readonly="true">
+		    </div>
+		</div>
+		<div class="form-group">
+		    <div class="col-sm-10">
+		      <button type="submit" class="btn btn-default" onclick="payBalance(<%=String.valueOf(balance)%>)">Pay Balance</button>
+		    </div>
+	  	</div> 
+      </div>
+    </div>
+  </div>
+  
+  
+
+</div>
+</body>
+</html>
